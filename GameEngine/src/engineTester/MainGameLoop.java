@@ -2,22 +2,60 @@ package engineTester;
 
 import org.lwjgl.opengl.Display;
 
-import gameEngine.DisplayManager;
+import renderEngine.DisplayManager;
+import renderEngine.Loader;
+import renderEngine.RawModel;
+import renderEngine.Renderer;
+import shaders.StaticShader;
 
+/**
+ * This class contains the main method and is used to test the engine.
+ * 
+ * @author Karl
+ *
+ */
 public class MainGameLoop {
 
+
+	/**
+	 * Loads up the position data for two triangles (which together make a quad)
+	 * into a VAO. This VAO is then rendered to the screen every frame.
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		
+		DisplayManager.createDisplay();
+		Loader loader = new Loader();
+		Renderer renderer = new Renderer();
+		StaticShader shader = new StaticShader();
 		
-		DisplayManager.createDispaly();
+		float[] vertices = {
+				-0.5f, 0.5f, 0f,	// V0
+				-0.5f, -0.5f, 0f,	// V1
+				0.5f, -0.5f, 0f,	// V2		
+				0.5f, 0.5f, 0 
+		}; 
+
+		int[] indices = {
+				0,1,3, 	// Top left triangle (V0, V1, V3)
+				3,1,2	// Bottom right triangle (V3, V1, V2) 
+		};
 		
-		while(!Display.isCloseRequested()) {
+		RawModel model = loader.loadToVAO(vertices, indices);
+
+		while (!Display.isCloseRequested()) {
 			// game logic
-			// render
-			DisplayManager.updateDispaly();
+			renderer.prepare();
+			shader.start();
+			renderer.render(model);
+			shader.stop();
+			DisplayManager.updateDisplay();
 		}
 
-		DisplayManager.closeDispaly();
+		shader.cleanUp();
+		loader.cleanUp();
+		DisplayManager.closeDisplay();
 	}
 
 }
